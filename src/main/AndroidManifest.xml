@@ -50,6 +50,12 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:enabled="true" android:exported="true"
+            android:name="com.varnitabraham.bgloc.LocationUpdatesBroadcastReceiver">
+            <intent-filter>
+                <action android:name="com.varnitabraham.bgloc.LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <uses-sdk android:minSdkVersion="14" />

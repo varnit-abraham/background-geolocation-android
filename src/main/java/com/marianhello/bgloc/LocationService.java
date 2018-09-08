@@ -163,7 +163,8 @@ public class LocationService extends Service implements ProviderDelegate {
         // All clients have unbound with unbindService()
         logger.debug("All clients have been unbound from service");
 
-        if (isStarted() && !isInForeground(this)) {
+        if (isStarted() && !isInForeground(this) &&
+                !(mConfig.getLocationProvider()==Config.FUSED_LOCATION_PROVIDER)) {
             startForeground();
         }
 
@@ -333,7 +334,7 @@ public class LocationService extends Service implements ProviderDelegate {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (isStarted()) {
+                if (isStarted() && (mConfig.getLocationProvider() != Config.FUSED_LOCATION_PROVIDER)) {
                     if (currentConfig.getStartForeground() == true && mConfig.getStartForeground() == false) {
                         stopForeground(true);
                     }

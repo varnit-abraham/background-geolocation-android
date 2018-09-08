@@ -17,6 +17,8 @@ import com.marianhello.bgloc.provider.LocationProvider;
 import com.marianhello.bgloc.provider.RawLocationProvider;
 import com.tenforwardconsulting.bgloc.DistanceFilterLocationProvider;
 import com.marianhello.bgloc.provider.ActivityRecognitionLocationProvider;
+import com.varnitabraham.bgloc.FusedLocationProvider;
+
 import java.lang.IllegalArgumentException;
 
 /**
@@ -41,6 +43,9 @@ public class LocationProviderFactory {
                 break;
             case Config.RAW_PROVIDER:
                 provider = new RawLocationProvider(mContext);
+                break;
+            case Config.FUSED_LOCATION_PROVIDER:
+                provider = new FusedLocationProvider(mContext);
                 break;
             default:
                 throw new IllegalArgumentException("Provider not found");
