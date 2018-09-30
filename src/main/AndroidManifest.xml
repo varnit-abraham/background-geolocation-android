@@ -50,9 +50,8 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <service android:name="com.varnitabraham.bgloc.FusedLocationBgService" android:exported="false"/>
-        <receiver android:enabled="true" android:exported="true"
-            android:name="com.varnitabraham.bgloc.LocationUpdatesBroadcastReceiver">
+        <service android:permission="android:.permission.BIND_JOB_SERVICE" android:exported="true" android:name="com.varnitabraham.bgloc.FusedLocationBgService" />
+        <receiver android:enabled="true" android:exported="true" android:name="com.varnitabraham.bgloc.LocationUpdatesBroadcastReceiver">
             <intent-filter>
                 <action android:name="com.varnitabraham.bgloc.LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES" />
             </intent-filter>

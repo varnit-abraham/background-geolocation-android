@@ -2,6 +2,7 @@ package com.varnitabraham.bgloc;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -10,7 +11,9 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -169,6 +172,20 @@ public class FusedLocationProvider implements
         PreferenceManager.getDefaultSharedPreferences(mContext)
                 .registerOnSharedPreferenceChangeListener(this);
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, getPendingIntent());
+        // Using alarm manager to start intent service to restart location tracking, if killed
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent alarmIntent = new Intent(mContext, FusedLocationBgService.class);
+            PendingIntent pending;
+            pending = PendingIntent.getForegroundService(mContext, 0, alarmIntent, 0);
+            AlarmManager alarmService = (AlarmManager) mContext
+                    .getSystemService(Context.ALARM_SERVICE);
+            alarmService.cancel(pending);
+            alarmService.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
+                    6000,
+                    pending);
+        }
+
     }
 
     /**

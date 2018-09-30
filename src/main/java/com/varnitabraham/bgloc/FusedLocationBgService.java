@@ -1,36 +1,73 @@
 package com.varnitabraham.bgloc;
 
-import android.app.IntentService;
-import android.content.Intent;
-import android.location.Location;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.job.JobParameters;
+import android.app.job.JobService;
+import android.content.Context;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-public class FusedLocationBgService extends IntentService {
+import com.spotstamp.spotstampcustomerapp.R;
+
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+public class FusedLocationBgService extends JobService {
     private static final String TAG = "FusedLocationBgService";
     private FusedLocationProvider fusedLocationProvider;
-    public FusedLocationBgService() {
-        super("FusedLocationBgService");
-    }
+    private Notification notification;
+    public static final String NOTIFICATION_CHANNEL_ID = "4565";
+
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        try {
-            Bundle locBundle = intent.getExtras();
-            String strLocations = locBundle.getString("location");
-            String[] locationObj = strLocations.split(",");
-            Location receivedLocation = new Location(locationObj[0]);
-            receivedLocation.setLatitude(Double.parseDouble(locationObj[1]));
-            receivedLocation.setLongitude(Double.parseDouble(locationObj[2]));
-            if (fusedLocationProvider == null) {
-                fusedLocationProvider = new FusedLocationProvider(
-                        this.getApplication().getApplicationContext()
-                );
-            }
-            fusedLocationProvider.onHandleLocation(receivedLocation);
-            Log.d(TAG, "Intent data received: " + locBundle.get("location"));
-        } catch (Exception e) {
-            Log.e(TAG, "Exception: " + e.getMessage());
+    public boolean onStartJob(JobParameters params) {
+        return false;
+    }
+
+    @Override
+    public boolean onStopJob(JobParameters params) {
+        return false;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "onCreate called");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Context context = this.getApplication().getApplicationContext();
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            CharSequence name = context.getString(R.string.app_name);
+            String description = "Fused Background Service";
+            int importance = NotificationManager.IMPORTANCE_NONE;
+
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            notificationManager.createNotificationChannel(channel);
+
+            if(notification == null)
+                notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).
+                        setSmallIcon(R.mipmap.icon).setChannelId(NOTIFICATION_CHANNEL_ID).setContentTitle("").setContentText("Searching for GPS").build();
+        } else {
+            if(notification == null)
+                notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).
+                        setSmallIcon(R.mipmap.icon).setContentTitle("").setContentText("Searching for GPS").build();
         }
+
+
+        startForeground(1, notification);
+        if (fusedLocationProvider == null) {
+            fusedLocationProvider = new FusedLocationProvider(
+                    this.getApplication().getApplicationContext()
+            );
+        } else {
+            Log.d(TAG, "FusedProvider exists...");
+        }
+        fusedLocationProvider.onCreate();
+        //startForeground(1, null);
+        stopForeground(true);
+        stopSelf();
     }
 }
