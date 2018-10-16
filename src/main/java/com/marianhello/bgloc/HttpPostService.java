@@ -5,16 +5,20 @@ import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Iterator;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -47,7 +51,52 @@ public class HttpPostService {
                 os.close();
             }
         }
+        return conn.getResponseCode();
+    }
 
+    public static int postFormEncoded(String url, JSONArray json, Map headers) throws IOException {
+        String jsonBody = "";
+        try {
+            JSONObject locationObj = json.getJSONObject(0);
+            Iterator<String> iter = locationObj.keys();
+            while (iter.hasNext()) {
+                String key = iter.next();
+                try {
+                    Object value = locationObj.get(key);
+                    if (jsonBody.isEmpty()) {
+                        jsonBody = jsonBody.concat(key+"="+value);
+                    } else {
+                        jsonBody = jsonBody.concat("&"+key+"="+value);
+                    }
+                } catch (JSONException e) {
+                    Log.e("POST SERVICE", "JSONException: " + e.getLocalizedMessage());
+                }
+            }
+        } catch (JSONException e) {
+            Log.e("POST SERVICE", "JSONException: " + e.getLocalizedMessage());
+        }
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setDoOutput(true);
+        conn.setFixedLengthStreamingMode(jsonBody.length());
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        Iterator<Map.Entry<String, String>> it = headers.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> pair = it.next();
+            conn.setRequestProperty(pair.getKey(), pair.getValue());
+        }
+
+        OutputStreamWriter os = null;
+        try {
+            os = new OutputStreamWriter(conn.getOutputStream());
+            os.write(jsonBody);
+
+        } finally {
+            if (os != null) {
+                os.flush();
+                os.close();
+            }
+        }
         return conn.getResponseCode();
     }
 

@@ -55,13 +55,13 @@ public class FusedLocationProvider implements
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL = 10000; // Every 60 seconds.
+    private static final long UPDATE_INTERVAL = 60000; // Every 60 seconds.
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
      * than this value, but they may be less frequent.
      */
-    private static final long FASTEST_UPDATE_INTERVAL = 5000; // Every 30 seconds
+    private static final long FASTEST_UPDATE_INTERVAL = 30000; // Every 30 seconds
 
     /**
      * The max time before batched results are delivered by location services. Results may be
@@ -182,7 +182,7 @@ public class FusedLocationProvider implements
                     .getSystemService(Context.ALARM_SERVICE);
             alarmService.cancel(pending);
             alarmService.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
-                    6000,
+                    60000,
                     pending);
         }
 
@@ -292,7 +292,7 @@ public class FusedLocationProvider implements
 
             try {
                 if (isNetworkAvailable()) {
-                    responseCode = HttpPostService.postJSON(url, jsonLocations, config.getHttpHeaders());
+                    responseCode = HttpPostService.postFormEncoded(url, jsonLocations, config.getHttpHeaders());
                 } else {
                     Log.d(TAG,"No network connectivity found.");
                     return false;
